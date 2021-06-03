@@ -1,11 +1,28 @@
 BEGIN
     CREATE TABLE IF NOT EXISTS users (
-        email VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL PRIMARY KEY,
         first_name VARCHAR(255) NOT NULL,
         last_name VARCHAR(255) NOT NULL,
         phone VARCHAR(50) NOT NULL,
-        pw_hashed BINARY(72) NOT NULL,
-        PRIMARY KEY ( email )
+        pw_hashed CHAR(72) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS drivers (
+        email VARCHAR(255) PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
+        seats SMALLINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS organizations (
+        org_name VARCHAR(255) NOT NULL,
+        org_code CHAR(4) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        pw_hashed CHAR(72) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS trips (
+        id SERIAL PRIMARY KEY,
+        driver VARCHAR(255) REFERENCES drivers(email),
+        passengers text[][]
     );
 
 END $$ LANGUAGE plpgsql;
