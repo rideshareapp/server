@@ -4,7 +4,7 @@ BEGIN
         first_name VARCHAR(255) NOT NULL,
         last_name VARCHAR(255) NOT NULL,
         phone VARCHAR(50) NOT NULL,
-        pw_hashed CHAR(72) NOT NULL
+        pw_hashed VARCHAR(72) NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS drivers (
@@ -16,7 +16,7 @@ BEGIN
         org_name VARCHAR(255) NOT NULL,
         org_code CHAR(4) NOT NULL,
         email VARCHAR(255) NOT NULL,
-        pw_hashed CHAR(72) NOT NULL
+        pw_hashed VARCHAR(72) NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS trips (
