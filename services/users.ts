@@ -21,11 +21,7 @@ export async function createNewUser(user: userModel.User): Promise<void> {
 export async function authenticateUser(email: string, password: string): Promise<boolean> {
     const hash = await db.getPassword(email);
     const match = await bcrypt.compare(password, hash);
-    if (match) {
-        return true;
-    } else {
-        return false;
-    }
+    return (match ? true : false); 
 }
 
 export async function tokenizeUser(): Promise<void> {
