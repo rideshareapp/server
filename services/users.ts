@@ -1,6 +1,7 @@
 import * as db from "../db/utils";
 import bcrypt from "bcrypt";
 import * as userModel from "../models/users";
+import jwt, { decode } from "jsonwebtoken";
 
 /**
  * Create new user
@@ -21,9 +22,30 @@ export async function createNewUser(user: userModel.User): Promise<void> {
 export async function authenticateUser(email: string, password: string): Promise<boolean> {
     const hash = await db.getPassword(email);
     const match = await bcrypt.compare(password, hash);
-    return (match ? true : false); 
+    return (match ? true : false);
 }
 
-export async function tokenizeUser(): Promise<void> {
-    //
+/**
+ * Create JWT token using user email
+ * @param email User email
+ * @returns JWT token
+ */
+export async function tokenizeUser(email: string): Promise<string> {
+    const token = jwt.sign(email, process.env.JWT_SECRET as string);
+    return token;
+}
+
+/**
+ * Verifies that a JWT is valid
+ * @param token JWT token
+ * @returns JWT verified or error
+ */
+export async function verifyToken(email: string, token: string): Promise<unknown> {
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        console.log(decoded);
+        return decoded;
+    } catch (err) {
+        return err;
+    }
 }

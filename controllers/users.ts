@@ -34,9 +34,12 @@ export async function login(email: string, password: string): Promise<unknown> {
     if (!await userService.authenticateUser(email, password)) {
         return "password mismatch";
     }
+
+    // Return token
+    const token = await userService.tokenizeUser(email);
     const user = await db.findUser(email);
     console.log("User login");
-    return user;
+    return token;
 }
 
 export async function logout(): Promise<void> {
