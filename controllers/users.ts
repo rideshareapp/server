@@ -32,7 +32,6 @@ export async function login(email: string, password: string): Promise<unknown> {
         return "password mismatch";
     }
 
-
     // Return token
     const token = await services.tokenizeAcc(email);
     return token;
