@@ -1,3 +1,5 @@
+// Services: Organizations
+
 import * as db from "../db/utils";
 import bcrypt from "bcrypt";
 import * as orgModel from "../models/organization";

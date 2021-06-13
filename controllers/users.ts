@@ -1,3 +1,5 @@
+// Controllers: Users
+
 import * as db from "../db/utils";
 import * as userModel from "../models/users";
 import * as services from "../services/";
