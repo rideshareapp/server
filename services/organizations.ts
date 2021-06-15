@@ -5,8 +5,8 @@ import bcrypt from "bcrypt";
 import * as orgModel from "../models/organization";
 
 /**
- * Create new user
- * @param user User model
+ * Create new organization
+ * @param org Org model
  * @returns true or false
  */
 export async function createNewOrg(org: orgModel.Organization): Promise<boolean> {

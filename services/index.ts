@@ -11,6 +11,7 @@ export * as orgService from "./organizations";
  * Check if submitted password matches database password
  * @param email email
  * @param password password
+ * @param type User or org login
  * @returns true or false
  */
 export async function authenticateAcc(email: string, password: string, type: "users" | "organizations"): Promise<boolean> {
@@ -31,6 +32,7 @@ export async function tokenizeAcc(email: string): Promise<string> {
 
 /**
  * Verifies that a JWT is valid
+ * @param email User or organization email
  * @param token JWT token
  * @returns JWT verified or error
  */
