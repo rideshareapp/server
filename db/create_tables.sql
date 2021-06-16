@@ -15,8 +15,9 @@ BEGIN
     CREATE TABLE IF NOT EXISTS organizations (
         org_name VARCHAR(255) NOT NULL,
         org_code CHAR(4) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        pw_hashed VARCHAR(72) NOT NULL
+        email VARCHAR(255) NOT NULL PRIMARY KEY,
+        pw_hashed VARCHAR(72) NOT NULL,
+        events JSONB
     );
 
     CREATE TABLE IF NOT EXISTS trips (
