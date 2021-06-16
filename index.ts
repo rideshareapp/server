@@ -23,4 +23,6 @@ app.get('*', (req: express.Request, res: express.Response) => {
 //   next();
 // });
 
+console.log("App is ready!");
+
 module.exports = app;
