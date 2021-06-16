@@ -35,7 +35,7 @@ export async function findOrg(email: string): Promise<orgModel.Organization> {
  * @param email - User email
  * @returns true or false
  */
- export async function checkOrgExists(email: string): Promise<boolean> {
+export async function checkOrgExists(email: string): Promise<boolean> {
     const res = await db.query("SELECT * FROM organizations WHERE email = $1", [email]);
     return (res.rows.length === 0 ? false : true);
 }
@@ -73,7 +73,7 @@ export async function findUser(email: string): Promise<userModel.User> {
  * @param email - User email
  * @returns true or false
  */
- export async function checkEntityExists(email: string, type: "users" | "organizations"): Promise<boolean> {
+export async function checkEntityExists(email: string, type: "users" | "organizations"): Promise<boolean> {
     const query = `SELECT * FROM ${type} WHERE email = $1`;
     const res = await db.query(query, [email]);
     return (res.rows.length === 0 ? false : true);
@@ -88,4 +88,20 @@ export async function getPassword(email: string, type: "users" | "organizations"
     const query = `SELECT pw_hashed FROM ${type} WHERE email = $1`;
     const res = await db.query(query, [email]);
     return res.rows[0].pw_hashed;
+}
+
+/**
+ * Create a new event and add to database
+ * @param email Organization email
+ * @param name Event name
+ * @param date Event date
+ * @returns boolean
+ */
+export async function createEvent(email: string | unknown, name: string, date: Date): Promise<boolean> {
+    try {
+        await db.query("UPDATE organizations SET events = events || {$1: $2} WHERE email = $3", [name, date, email]);
+        return true;
+    } catch (err) {
+        return false;
+    }
 }
