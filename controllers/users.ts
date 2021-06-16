@@ -3,6 +3,7 @@
 import * as db from "../db/utils";
 import * as userModel from "../models/users";
 import * as services from "../services/";
+import * as auth from "../auth";
 
 export async function userRegister(user: userModel.User): Promise<unknown> {
     // User registration logic
@@ -30,12 +31,12 @@ export async function login(email: string, password: string): Promise<unknown> {
         return "user not found";
     }
     // Authenticate user
-    if (!await services.authenticateAcc(email, password, "users")) {
+    if (!await auth.authenticateAcc(email, password, "users")) {
         return "password mismatch";
     }
 
     // Return token
-    const token = await services.tokenizeAcc(email);
+    const token = await auth.tokenizeAcc(email);
     return token;
 }
 

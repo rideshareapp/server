@@ -3,12 +3,13 @@
 import * as db from "../db/utils";
 import * as orgModel from "../models/organization";
 import * as services from "../services";
+import * as auth from "../auth";
 
 export async function orgRegister(org: orgModel.Organization): Promise<unknown> {
     // Organization registration logic
     
     // Check if org already exists
-    if (await db.checkOrgExists(org.email)) {
+    if (await db.checkEntityExists(org.email, "organizations")) {
         return "org already exists";
     }
 
@@ -26,16 +27,16 @@ export async function login(email: string, password: string): Promise<unknown> {
     // Organization login logic
     // Authentication
     // Store session tokens
-    if (!await db.checkEntityExists(email, "users")) {
+    if (!await db.checkEntityExists(email, "organizations")) {
         return "user not found";
     }
     // Authenticate user
-    if (!await services.authenticateAcc(email, password, "users")) {
+    if (!await auth.authenticateAcc(email, password, "organizations")) {
         return "password mismatch";
     }
 
     // Return token
-    const token = await services.tokenizeAcc(email);
+    const token = await auth.tokenizeAcc(email);
     return token;
 }
 
