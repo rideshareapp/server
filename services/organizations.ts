@@ -22,15 +22,14 @@ export async function createNewOrg(org: orgModel.Organization): Promise<boolean>
 
 /**
  * Get organization email from token cookie and call createEvent database query
- * @param token JWT token
+ * @param code Org code
  * @param name Event name
  * @param date Event date
  * @returns boolean
  */
-export async function createEvent(token: string, name: string, date: Date): Promise<boolean> {
+export async function createEvent(code: string, name: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        const email = await auth.tokenGetPayload(token);
-        if (await db.createEvent(email, name, date)) {
+        if (await db.createEvent(code, name, date, include_time)) {
             return true;
         } else {
             return false;

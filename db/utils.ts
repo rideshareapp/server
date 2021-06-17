@@ -92,16 +92,18 @@ export async function getPassword(email: string, type: "users" | "organizations"
 
 /**
  * Create a new event and add to database
- * @param email Organization email
+ * @param code Organization code
  * @param name Event name
  * @param date Event date
+ * @param include_time Tells the frontend whether or not to display time
  * @returns boolean
  */
-export async function createEvent(email: string | unknown, name: string, date: Date): Promise<boolean> {
+export async function createEvent(code: string | unknown, name: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        await db.query("UPDATE organizations SET events = events || {$1: $2} WHERE email = $3", [name, date, email]);
+        await db.query("INSERT INTO events VALUES($1, $2, $3, $4)", [code, name, date, include_time]);
         return true;
     } catch (err) {
+        console.log(err);
         return false;
     }
 }
