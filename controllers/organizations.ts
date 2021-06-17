@@ -4,7 +4,6 @@ import * as db from "../db/utils";
 import * as orgModel from "../models/organization";
 import * as services from "../services";
 import * as auth from "../auth";
-import * as eventModel from "../models/events";
 
 export async function orgRegister(org: orgModel.Organization): Promise<unknown> {
     // Organization registration logic
@@ -41,20 +40,4 @@ export async function login(email: string, password: string): Promise<unknown> {
 export async function logout(): Promise<void> {
     // User logout logic
     // Delete session and tokens
-}
-
-export async function createEvent(req: eventRequest): Promise<unknown> {
-    try {
-        return (await services.orgService.createEvent(req.code, req.name, req.date, req.include_time) ? true : false);
-    } catch (err) {
-        console.log(err);
-        return false;
-    }
-}
-
-interface eventRequest {
-    code: string;
-    name: string;
-    date: Date;
-    include_time: boolean;
 }
