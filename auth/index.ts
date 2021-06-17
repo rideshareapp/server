@@ -4,6 +4,19 @@ import * as jwt from "jsonwebtoken";
 import * as db from "../db/utils";
 import bcrypt from "bcrypt";
 
+/**
+ * Hash a plaintext password using bcrypt
+ * @param plaintext Plaintext password
+ * @returns Hashed password
+ */
+export async function hashPassword(plaintext: string): Promise<string> {
+    try {
+        const hashed = await bcrypt.hash(plaintext, 10);
+        return hashed;
+    }catch (err) {
+        return err;
+    }
+}
 
 /**
  * Check if submitted password matches database password
@@ -12,7 +25,7 @@ import bcrypt from "bcrypt";
  * @param type User or org login
  * @returns true or false
  */
- export async function authenticateAcc(email: string, password: string, type: "users" | "organizations"): Promise<boolean> {
+export async function authenticateAcc(email: string, password: string, type: "users" | "organizations"): Promise<boolean> {
     const hash = await db.getPassword(email, type);
     const match = await bcrypt.compare(password, hash);
     return (match ? true : false);
@@ -23,7 +36,7 @@ import bcrypt from "bcrypt";
  * @param email User or org email
  * @returns JWT token
  */
- export async function tokenizeAcc(email: string): Promise<string> {
+export async function tokenizeAcc(email: string): Promise<string> {
     const token = jwt.sign(email, process.env.JWT_SECRET as string);
     return token;
 }
