@@ -1,6 +1,7 @@
 import * as db from "./database";
 import * as userModel from "../models/users";
 import * as orgModel from "../models/organization";
+import * as eventModel from "../models/events";
 
 
 /**
@@ -103,7 +104,22 @@ export async function createEvent(code: string | unknown, name: string, date: Da
         await db.query("INSERT INTO events VALUES($1, $2, $3, $4)", [code, name, date, include_time]);
         return true;
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return false;
+    }
+}
+
+/**
+ * Get all events for an organization
+ * @param code Organization code
+ * @returns Array of organization events
+ */
+export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode>> {
+    try {
+        const res = await db.query("SELECT event_name, event_date, include_time FROM events WHERE org_code = $1", [code]);
+        return(res.rows);
+    } catch (err) {
+        console.error(err);
+        return err;
     }
 }

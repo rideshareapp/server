@@ -1,6 +1,7 @@
 // Services: Events
 
 import * as db from "../db/utils";
+import * as eventModel from "../models/events";
 
 /**
  * Get organization email from token cookie and call createEvent database query
@@ -19,5 +20,20 @@ import * as db from "../db/utils";
     } catch (err) {
         console.log(err);
         return false;
+    }
+}
+
+
+/**
+ * Get list of events associated with an organization
+ * @param code Organization code
+ * @returns List of events
+ */
+export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode> | undefined> {
+    try {
+        const eventList = await db.getEvents(code);
+        return eventList;
+    } catch (err) {
+        console.error(err);
     }
 }
