@@ -33,11 +33,13 @@ export async function findOrg(email: string): Promise<orgModel.Organization> {
 
 /**
  * Checks if an organization email is already in the database
- * @param email - User email
+ * @param id Organization email or code
+ * @param method
  * @returns true or false
  */
-export async function checkOrgExists(email: string): Promise<boolean> {
-    const res = await db.query("SELECT * FROM organizations WHERE email = $1", [email]);
+export async function checkOrgExists(id: string, method: "org_code" | "email"): Promise<boolean> {
+    const query = `SELECT * FROM organizations WHERE ${method} = $1`;
+    const res = await db.query(query, [id]);
     return (res.rows.length === 0 ? false : true);
 }
 
@@ -117,9 +119,25 @@ export async function createEvent(code: string | unknown, name: string, date: Da
 export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode>> {
     try {
         const res = await db.query("SELECT event_name, event_date, include_time FROM events WHERE org_code = $1", [code]);
-        return(res.rows);
+        return (res.rows);
     } catch (err) {
         console.error(err);
         return err;
+    }
+}
+
+/**
+ * Add organization code to user list
+ * @param code Organization code
+ * @param email User email
+ * @returns boolean
+ */
+export async function joinOrg(code: string, email: string): Promise<boolean> {
+    try {
+        await db.query(`UPDATE users SET in_orgs = in_orgs || ARRAY[$1] WHERE email = $2`, [code, email]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
     }
 }

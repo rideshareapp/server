@@ -4,7 +4,8 @@ BEGIN
         first_name VARCHAR(255) NOT NULL,
         last_name VARCHAR(255) NOT NULL,
         phone VARCHAR(50) NOT NULL,
-        pw_hashed VARCHAR(72) NOT NULL
+        pw_hashed VARCHAR(72) NOT NULL,
+        in_orgs text[]
     );
 
     CREATE TABLE IF NOT EXISTS drivers (
