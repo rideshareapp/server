@@ -44,3 +44,17 @@ export async function logout(): Promise<void> {
     // User logout logic
     // Delete session and tokens
 }
+
+/**
+ * Add organization code to user list
+ * @param code Organization code
+ * @param email User email
+ * @returns 
+ */
+ export async function joinOrg(code: string, email: string): Promise<boolean> {
+    //  TODO: Check if org code exists
+    if (!await db.checkOrgExists(code, "org_code")) {
+        return false;
+    }
+    return (await db.joinOrg(code, email) ? true : false);
+}
