@@ -9,13 +9,13 @@ import * as eventModel from "../models/events";
  * @param org Organization model
  * @returns true or false
  */
-export async function createOrg(org: orgModel.Organization): Promise<boolean> {
+export async function createOrg(org: orgModel.Organization): Promise<boolean | Error> {
     try {
         const params = [org.name, org.code, org.email, org.password];
         await db.query("INSERT INTO organizations VALUES($1, $2, $3, $4)", params);
         return true;
-    } catch {
-        return false;
+    } catch (err) {
+        return new Error("failed to create org");
     }
 }
 
@@ -34,7 +34,7 @@ export async function findOrg(email: string): Promise<orgModel.Organization> {
 /**
  * Checks if an organization email is already in the database
  * @param id Organization email or code
- * @param method
+ * @param method 'org_code' or 'email'
  * @returns true or false
  */
 export async function checkOrgExists(id: string, method: "org_code" | "email"): Promise<boolean> {
@@ -73,24 +73,36 @@ export async function findUser(email: string): Promise<userModel.User> {
 
 /**
  * Checks if a user email is already in the database
- * @param email - User email
+ * @param email email to check
+ * @param type 'users' or 'organizations' database
  * @returns true or false
  */
 export async function checkEntityExists(email: string, type: "users" | "organizations"): Promise<boolean> {
-    const query = `SELECT * FROM ${type} WHERE email = $1`;
-    const res = await db.query(query, [email]);
-    return (res.rows.length === 0 ? false : true);
+    try {
+        const query = `SELECT * FROM ${type} WHERE email = $1`;
+        const res = await db.query(query, [email]);
+        return (res.rows.length === 0 ? false : true);
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
 }
 
 /**
  * Get the password of a user from the users database
- * @param user - User email
+ * @param user email to check
+ * @param type 'users' or 'organizations' database
  * @returns hashed password of user
  */
 export async function getPassword(email: string, type: "users" | "organizations"): Promise<string> {
-    const query = `SELECT pw_hashed FROM ${type} WHERE email = $1`;
-    const res = await db.query(query, [email]);
-    return res.rows[0].pw_hashed;
+    try {
+        const query = `SELECT pw_hashed FROM ${type} WHERE email = $1`;
+        const res = await db.query(query, [email]);
+        return res.rows[0].pw_hashed;
+    } catch (err) {
+        console.error(err);
+        return err;
+    }
 }
 
 /**
@@ -139,5 +151,22 @@ export async function joinOrg(code: string, email: string): Promise<boolean> {
     } catch (err) {
         console.error(err);
         return false;
+    }
+}
+
+/**
+ * Check if user is already in an organization
+ * @param code Organization code to check
+ * @param email User email
+ * @returns boolean
+ */
+export async function checkUserInOrg(code: string, email: string): Promise<boolean> {
+    try {
+        const res = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
+        if (res === null) return false; // If new user not in any orgs
+        return (await res.includes(code) ? true : false);
+    } catch (err) {
+        console.error(err);
+        return true;
     }
 }
