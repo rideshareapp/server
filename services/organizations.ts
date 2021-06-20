@@ -9,8 +9,13 @@ import * as auth from "../auth";
  * @param org Org model
  * @returns true or false
  */
-export async function createNewOrg(org: orgModel.Organization): Promise<boolean> {
-    const newOrg = new orgModel.Organization(org.name, org.code, org.email, org.password);
-    newOrg.password = await auth.hashPassword(newOrg.password);
-    return (await db.createOrg(newOrg) ? true : false);
+export async function createNewOrg(org: orgModel.Organization): Promise<unknown> {
+    try {
+        const newOrg = new orgModel.Organization(org.name, org.code, org.email, org.password);
+        newOrg.password = await auth.hashPassword(newOrg.password);
+        return (await db.createOrg(newOrg) ? true : false);
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
 }
