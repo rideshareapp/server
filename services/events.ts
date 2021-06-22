@@ -10,13 +10,9 @@ import * as eventModel from "../models/events";
  * @param date Event date
  * @returns boolean
  */
- export async function createEvent(code: string, name: string, date: Date, include_time: boolean): Promise<boolean> {
+export async function createEvent(code: string, name: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        if (await db.createEvent(code, name, date, include_time)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (await db.createEvent(code, name, date, include_time) ? true : false);
     } catch (err) {
         console.log(err);
         return false;
@@ -29,11 +25,12 @@ import * as eventModel from "../models/events";
  * @param code Organization code
  * @returns List of events
  */
-export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode> | undefined> {
+export async function getEvents(code: string): Promise<Array<unknown> | boolean> {
     try {
-        const eventList = await db.getEvents(code);
-        return eventList;
+        const events = await db.getEvents(code);
+        return (events ? events : false);
     } catch (err) {
         console.error(err);
+        return false;
     }
 }
