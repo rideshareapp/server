@@ -53,6 +53,9 @@ export async function joinOrg(req: Request, res: Response, next: NextFunction): 
         if (!await db.checkOrgExists(req.body.code, "org_code")) {
             return res.status(409).json(new Error("org does not exist"));
         }
+        if (!await db.checkEntityExists(req.body.email, "users")) {
+            return res.status(409).json(new Error("user not found"));
+        }
         if (await db.checkUserInOrg(req.body.code, req.body.email)) {
             return res.status(409).json(new Error("user already in org"));
         }
