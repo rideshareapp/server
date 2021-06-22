@@ -7,28 +7,7 @@ import * as auth from "../auth";
 import { Request, Response, NextFunction } from "express";
 import { Success, Error } from "../models/return_status";
 
-// export async function orgRegister(org: orgModel.Organization): Promise<unknown> {
-//     // Organization registration logic
-
-//     // Check if org already exists
-//     if (await db.checkEntityExists(org.email, "organizations")) {
-//         return "org already exists";
-//     }
-//     // Create new organization
-//     // if (!await services.orgService.createNewOrg(org)) {
-//     //     return "failed to create new org";
-//     // }
-//     try {
-//         await services.orgService.createNewOrg(org);
-//     } catch (err) {
-//         return ["error", "failed to create new org"];
-//     }
-
-//     // User login
-//     const token = login(org.email, org.password);
-//     return token;
-// }
-export async function orgRegister(req: Request, res: Response, next: NextFunction): Promise<unknown> {
+export async function orgRegister(req: Request, res: Response, next: NextFunction): Promise<Response> {
     try {
         // Organization registration logic
         const org: orgModel.Organization = req.body;
@@ -46,7 +25,7 @@ export async function orgRegister(req: Request, res: Response, next: NextFunctio
 
 }
 
-export async function login(req: Request, res: Response, next: NextFunction): Promise<unknown> {
+export async function login(req: Request, res: Response, next: NextFunction): Promise<Response> {
     try {
         // TODO: Store session tokens
 
@@ -65,25 +44,6 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
         return res.status(500).json(new Error("internal server error"));
     }
 }
-
-
-// try {
-//     // TODO: Store session tokens
-
-//     // Authenticate user
-//     if (!await db.checkEntityExists(req.body.email, "users")) {
-//         return res.status(409).json(new Error("user not found"));
-//     }
-//     if (!await auth.authenticateAcc(req.body.email, req.body.password, "users")) {
-//         return res.status(401).json(new Error("password mismatch"));
-//     }
-//     // Return token
-//     const token = await auth.tokenizeAcc(req.body.email);
-//     return res.status(200).json(new Success({ "token": token }));
-// } catch (err) {
-//     console.error(err);
-//     return res.status(500).json(new Error("internal server error"));
-// }
 
 export async function logout(): Promise<void> {
     // User logout logic
