@@ -68,3 +68,43 @@ export async function joinOrg(req: Request, res: Response): Promise<Response> {
         return res.status(500).json(new Error("internal server error"));
     }
 }
+
+// export async function leaveOrg(req: Request, res: Response): Promise<Response> {
+
+// }
+
+export async function updateUserProfile(req: Request, res: Response): Promise<Response> {
+    try {
+        if (!await db.updateUserProfile(req.body)) {
+            return res.status(500).json(new Error("internal server error"));
+        }
+        return res.status(200).json(new Success("user updated"));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}
+
+export async function updateUserPassword(req: Request, res: Response): Promise<Response> {
+    try {
+        if (!await services.userService.updateUserPassword(req.body.email, req.body.oldPassword, req.body.newPassword)) {
+            return res.status(500).json(new Error("internal server error"));
+        }
+        return res.status(200).json(new Success("user updated"));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}
+
+export async function updateUserEmail(req: Request, res: Response): Promise<Response> {
+    try {
+        if (!await services.userService.updateUserEmail(req.body.oldEmail, req.body.newEmail)) {
+            return res.status(500).json(new Error("internal server error"));
+        }
+        return res.status(200).json(new Success("user updated"));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}
