@@ -7,7 +7,7 @@ import * as eventModel from "../models/events";
 /**
  * Create a new organization and add to database
  * @param org Organization model
- * @returns true or false
+ * @returns boolean
  */
 export async function createOrg(org: orgModel.Organization): Promise<boolean | Error> {
     try {
@@ -35,7 +35,7 @@ export async function findOrg(email: string): Promise<orgModel.Organization> {
  * Checks if an organization email is already in the database
  * @param id Organization email or code
  * @param method 'org_code' or 'email'
- * @returns true or false
+ * @returns boolean
  */
 export async function checkOrgExists(id: string, method: "org_code" | "email"): Promise<boolean> {
     const query = `SELECT * FROM organizations WHERE ${method} = $1`;
@@ -46,7 +46,7 @@ export async function checkOrgExists(id: string, method: "org_code" | "email"): 
 /**
  * Create a new user and add to database
  * @param user - User model
- * @returns true or false
+ * @returns boolean
  */
 export async function createUser(user: userModel.User): Promise<boolean> {
     try {
@@ -54,6 +54,52 @@ export async function createUser(user: userModel.User): Promise<boolean> {
         await db.query("INSERT INTO users VALUES($1, $2, $3, $4, $5)", params);
         return true;
     } catch {
+        return false;
+    }
+}
+
+/**
+ * Update user info
+ * @param user User model
+ * @returns boolean
+ */
+export async function updateUserProfile(user: userModel.User): Promise<boolean> {
+    try {
+        await db.query("UPDATE users SET first_name = $2, last_name = $3, phone = $4 WHERE email = $1", [user.email, user.first, user.last, user.phone]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Update user email
+ * @param newEmail New email
+ * @param oldEmail Old email
+ * @returns boolean 
+ */
+export async function updateUserEmail(newEmail: string, oldEmail: string): Promise<boolean> {
+    try {
+        await db.query("UPDATE users SET email = $1 WHERE email = $2", [newEmail, oldEmail]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Update user password
+ * @param password New password
+ * @returns boolean
+ */
+export async function updateUserPassword(email: string, password: string): Promise<boolean> {
+    try {
+        await db.query("UPDATE users SET pw_hashed = $1 WHERE email = $2", [password, email]);
+        return true;
+    } catch (err) {
+        console.error(err);
         return false;
     }
 }
@@ -75,7 +121,7 @@ export async function findUser(email: string): Promise<userModel.User> {
  * Checks if a user email is already in the database
  * @param email email to check
  * @param type 'users' or 'organizations' database
- * @returns true or false
+ * @returns boolean
  */
 export async function checkEntityExists(email: string, type: "users" | "organizations"): Promise<boolean> {
     try {
