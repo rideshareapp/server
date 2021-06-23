@@ -115,7 +115,42 @@ export async function getPassword(email: string, type: "users" | "organizations"
  */
 export async function createEvent(code: string | unknown, name: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        await db.query("INSERT INTO events VALUES($1, $2, $3, $4)", [code, name, date, include_time]);
+        await db.query("INSERT INTO events(org_code, event_name, event_date, include_time) VALUES($1, $2, $3, $4)", [code, name, date, include_time]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Update an existing event
+ * @param id Event id
+ * @param name Updated name
+ * @param date Updated date
+ * @param include_time Tells the frontend whether or not to display time
+ * @returns boolean
+ */
+export async function updateEvent(id: number, name: string, date: Date, include_time: boolean): Promise<boolean> {
+    try {
+        // TODO: Make sure event belongs to user before updating
+        await db.query("UPDATE events SET event_name = $1, event_date = $2, include_time = $3 WHERE id = $4", [name, date, include_time, id]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Delete an event by id
+ * @param id id from event table
+ * @returns boolean
+ */
+export async function deleteEvent(id: number): Promise<boolean> {
+    try {
+        // TODO: Make sure event belongs to user before deleting
+        await db.query("DELETE FROM events WHERE id = $1", [id]);
         return true;
     } catch (err) {
         console.error(err);
@@ -130,7 +165,7 @@ export async function createEvent(code: string | unknown, name: string, date: Da
  */
 export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode>> {
     try {
-        const res = await db.query("SELECT event_name, event_date, include_time FROM events WHERE org_code = $1", [code]);
+        const res = await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = $1", [code]);
         return (res.rows);
     } catch (err) {
         console.error(err);
