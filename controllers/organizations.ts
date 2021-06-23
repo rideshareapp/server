@@ -4,10 +4,10 @@ import * as db from "../db/utils";
 import * as orgModel from "../models/organization";
 import * as services from "../services";
 import * as auth from "../auth";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { Success, Error } from "../models/return_status";
 
-export async function orgRegister(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function orgRegister(req: Request, res: Response): Promise<Response> {
     try {
         // Organization registration logic
         const org: orgModel.Organization = req.body;
@@ -17,7 +17,7 @@ export async function orgRegister(req: Request, res: Response, next: NextFunctio
         if (!await services.orgService.createNewOrg(org)) {
             return res.status(500).json(new Error("failed to create org"));
         }
-        return await login(req, res, next);
+        return await login(req, res);
     } catch (err) {
         console.error(err);
         return res.status(500).json(new Error("internal server error"));
@@ -25,7 +25,7 @@ export async function orgRegister(req: Request, res: Response, next: NextFunctio
 
 }
 
-export async function login(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function login(req: Request, res: Response): Promise<Response> {
     try {
         // TODO: Store session tokens
 

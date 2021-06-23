@@ -2,7 +2,7 @@
 
 import * as services from "../services";
 import { Success, Error } from "../models/return_status";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 export async function createEvent(req: Request, res: Response): Promise<Response> {
     try {

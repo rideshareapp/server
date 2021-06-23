@@ -5,9 +5,9 @@ import * as userModel from "../models/users";
 import { Success, Error } from "../models/return_status";
 import * as services from "../services/";
 import * as auth from "../auth";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
-export async function userRegister(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function userRegister(req: Request, res: Response): Promise<Response> {
     try {
         const user: userModel.User = req.body; // Create a new user from body content
         if (await db.checkEntityExists(req.body.email, "users")) {
@@ -16,14 +16,14 @@ export async function userRegister(req: Request, res: Response, next: NextFuncti
         if (!await services.userService.createNewUser(user)) {
             return res.status(500).json(new Error("failed to create user"));
         }
-        return await login(req, res, next);
+        return await login(req, res);
     } catch (err) {
         console.error(err);
         return res.status(500).json(new Error("internal server error"));
     }
 }
 
-export async function login(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function login(req: Request, res: Response): Promise<Response> {
     try {
         // TODO: Store session tokens
 
@@ -48,7 +48,7 @@ export async function logout(): Promise<void> {
     // Delete session and tokens
 }
 
-export async function joinOrg(req: Request, res: Response, next: NextFunction): Promise<Response> {
+export async function joinOrg(req: Request, res: Response): Promise<Response> {
     try {
         if (!await db.checkOrgExists(req.body.code, "org_code")) {
             return res.status(409).json(new Error("org does not exist"));
