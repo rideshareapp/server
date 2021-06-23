@@ -13,7 +13,8 @@ export async function hashPassword(plaintext: string): Promise<string> {
     try {
         const hashed = await bcrypt.hash(plaintext, 10);
         return hashed;
-    }catch (err) {
+    } catch (err) {
+        console.error(err);
         return err;
     }
 }
@@ -26,9 +27,16 @@ export async function hashPassword(plaintext: string): Promise<string> {
  * @returns true or false
  */
 export async function authenticateAcc(email: string, password: string, type: "users" | "organizations"): Promise<boolean> {
-    const hash = await db.getPassword(email, type);
-    const match = await bcrypt.compare(password, hash);
-    return (match ? true : false);
+    try {
+        const hash = await db.getPassword(email, type);
+        const match = await bcrypt.compare(password, hash);
+        if (!match) console.log("password mismatch");
+        return (match ? true : false);
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+
 }
 
 /**
