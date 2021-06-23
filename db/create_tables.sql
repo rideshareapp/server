@@ -27,6 +27,7 @@ BEGIN
     );
 
     CREATE TABLE IF NOT EXISTS events (
+        id SERIAL PRIMARY KEY;
         org_code CHAR(4) NOT NULL REFERENCES organizations(org_code),
         event_name VARCHAR(255) NOT NULL,
         event_date TIMESTAMP NOT NULL,

@@ -12,11 +12,13 @@ export class Event {
 }
 
 export class EventNoCode {
+    id: number;
     event_name: string;
     event_date: Date;
     include_time: boolean;
 
-    constructor(event_name: string, event_date: Date, include_time: boolean) {
+    constructor(id: number, event_name: string, event_date: Date, include_time: boolean) {
+        this.id = id;
         this.event_name = event_name;
         this.event_date = event_date;
         this.include_time = include_time;
