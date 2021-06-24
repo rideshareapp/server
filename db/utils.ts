@@ -251,3 +251,14 @@ export async function checkUserInOrg(code: string, email: string): Promise<boole
         return true;
     }
 }
+
+export async function newDriver(email: string, code: string): Promise<boolean> {
+    try {
+        await db.query("INSERT INTO drivers VALUES($1, $2)", [email, code]);
+        return true;
+    } catch (err) {
+        console.error(err.message);
+        // return false;
+        throw Error("new error!");
+    }
+}
