@@ -9,8 +9,9 @@ BEGIN
     );
 
     CREATE TABLE IF NOT EXISTS drivers (
-        email VARCHAR(255) PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
-        seats SMALLINT NOT NULL
+        email VARCHAR(255) NOT NULL REFERENCES users(email) ON DELETE CASCADE,
+        org_code CHAR(4) NOT NULL REFERENCES organizations(org_code),
+        PRIMARY KEY (email, org_code)
     );
 
     CREATE TABLE IF NOT EXISTS organizations (
