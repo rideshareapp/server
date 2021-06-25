@@ -9,8 +9,8 @@ BEGIN
     );
 
     CREATE TABLE IF NOT EXISTS drivers (
-        email VARCHAR(255) NOT NULL REFERENCES users(email) ON DELETE CASCADE,
-        org_code CHAR(4) NOT NULL REFERENCES organizations(org_code),
+        email VARCHAR(255) NOT NULL REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
+        org_code CHAR(4) NOT NULL REFERENCES organizations(org_code) ON DELETE CASCADE ON UPDATE CASCADE,
         PRIMARY KEY (email, org_code)
     );
 
@@ -23,16 +23,25 @@ BEGIN
 
     CREATE TABLE IF NOT EXISTS trips (
         id SERIAL PRIMARY KEY,
-        driver VARCHAR(255) REFERENCES drivers(email),
+        driver VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
+        event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
         passengers text[][]
     );
 
+    CREATE TABLE IF NOT EXISTS trip_requests (
+        id SERIAL PRIMARY KEY,
+        event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
+        geolocation POINT,
+        passengers SMALLINT DEFAULT 1
+    );
+
     CREATE TABLE IF NOT EXISTS events (
-        id SERIAL PRIMARY KEY;
-        org_code CHAR(4) NOT NULL REFERENCES organizations(org_code),
+        id SERIAL PRIMARY KEY,
+        org_code CHAR(4) NOT NULL REFERENCES organizations(org_code) ON DELETE CASCADE ON UPDATE CASCADE,
         event_name VARCHAR(255) NOT NULL,
         event_date TIMESTAMP NOT NULL,
         include_time BOOLEAN NOT NULL DEFAULT false
-    )
+    );
 
 END $$ LANGUAGE plpgsql;
