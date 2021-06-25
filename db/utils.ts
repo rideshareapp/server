@@ -262,3 +262,23 @@ export async function newDriver(email: string, code: string): Promise<boolean> {
         throw Error("new error!");
     }
 }
+
+export async function getTripRequests(event_id: number): Promise<unknown> {
+    try {
+        const res = await db.query("SELECT id, email, geolocation, passengers FROM trip_requests WHERE event_id = $1", [event_id]);
+        return (res.rows);
+    } catch (err) {
+        console.error(err);
+        return err;
+    }
+}
+
+export async function newTripRequest(event_id: number, email: string, geolocation: string, passengers: number): Promise<boolean> {
+    try {
+        await db.query("INSERT INTO trip_requests(event_id, email, geolocation, passengers) VALUES($1, $2, $3, $4)", [event_id, email, geolocation, passengers]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
