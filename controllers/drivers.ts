@@ -13,7 +13,19 @@ export async function newDriver(req: Request, res: Response): Promise<Response> 
         await db.newDriver(req.body.email, req.body.code);
         return res.status(201).json(new Success("driver added"));
     } catch (err) {
-        console.error("errorz:", err);
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}
+
+export async function acceptTrip(req: Request, res: Response): Promise<Response> {
+    try {
+        if (!db.acceptTripRequest(req.body.event_id, req.body.trip_request_id, req.body.driver)) {
+            return res.status(500).json(new Error("internal server error"));
+        }
+        return res.status(201).json(new Success("trip accepted"));
+    } catch (err) {
+        console.error(err);
         return res.status(500).json(new Error("internal server error"));
     }
 }
