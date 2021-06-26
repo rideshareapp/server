@@ -15,6 +15,7 @@ export async function createOrg(org: orgModel.Organization): Promise<boolean | E
         await db.query("INSERT INTO organizations VALUES($1, $2, $3, $4)", params);
         return true;
     } catch (err) {
+        console.error(err);
         return new Error("failed to create org");
     }
 }
@@ -40,6 +41,16 @@ export async function findOrg(email: string): Promise<orgModel.Organization> {
 export async function checkOrgExists(id: string, method: "org_code" | "email"): Promise<boolean> {
     const query = `SELECT * FROM organizations WHERE ${method} = $1`;
     const res = await db.query(query, [id]);
+    return (res.rows.length === 0 ? false : true);
+}
+
+/**
+ * Check if organization code already exists
+ * @param code Possible org code
+ * @returns Boolean
+ */
+export async function checkOrgCodeExists(code: string): Promise<boolean> {
+    const res = await db.query("SELECT email FROM organizations WHERE org_code = $1", [code]);
     return (res.rows.length === 0 ? false : true);
 }
 
