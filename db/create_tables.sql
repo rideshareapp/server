@@ -25,7 +25,8 @@ BEGIN
         id SERIAL PRIMARY KEY,
         driver VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
         event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        passengers text[][]
+        people jsonb,
+        total_passengers SMALLINT
     );
 
     CREATE TABLE IF NOT EXISTS trip_requests (
