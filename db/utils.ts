@@ -282,3 +282,23 @@ export async function newTripRequest(event_id: number, email: string, geolocatio
         return false;
     }
 }
+
+export async function acceptTripRequest(event_id: number, trip_request_id: number, driver: string): Promise<unknown> {
+    try {
+        const tripRequest = (await db.query("SELECT * FROM trip_requests WHERE id = $1", [trip_request_id])).rows[0];
+        console.log(tripRequest.geolocation);
+        const checkTripExists = (await db.query("SELECT id FROM trips WHERE driver = $1 AND event_id = $2", [driver, event_id]));
+        if (checkTripExists.rowCount !== 0) {
+            // UPDATE
+            await db.query("UPDATE trips SET people = people || $1, total_passengers = total_passengers + $2 WHERE event_id = $3 AND driver = $4", [`[{"email": "${tripRequest.email}", "geolocation": ${JSON.stringify(tripRequest.geolocation)},"passengers": "${tripRequest.passengers}"}]`, tripRequest.passengers, event_id, driver]);
+        } else {
+            // CREATE
+            await db.query("INSERT INTO trips(driver, event_id, people, total_passengers) VALUES($1, $2, $3, $4)", [driver, event_id, `[{"email": "${tripRequest.email}", "geolocation": ${JSON.stringify(tripRequest.geolocation)},"passengers": "${tripRequest.passengers}"}]`, tripRequest.passengers]);
+        }
+        await db.query("DELETE FROM trip_requests WHERE id = $1", [trip_request_id]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
