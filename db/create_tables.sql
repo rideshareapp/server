@@ -1,4 +1,6 @@
 BEGIN
+    CREATE EXTENSION IF NOT EXISTS CITEXT;
+
     CREATE TABLE IF NOT EXISTS users (
         email VARCHAR(255) NOT NULL PRIMARY KEY,
         first_name VARCHAR(255) NOT NULL,
@@ -16,7 +18,7 @@ BEGIN
 
     CREATE TABLE IF NOT EXISTS organizations (
         org_name VARCHAR(255) NOT NULL,
-        org_code CHAR(4) NOT NULL PRIMARY KEY,
+        org_code CITEXT(4) NOT NULL PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
         pw_hashed VARCHAR(72) NOT NULL
     );
@@ -25,7 +27,7 @@ BEGIN
         id SERIAL PRIMARY KEY,
         driver VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
         event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        people jsonb,
+        people JSONB,
         total_passengers SMALLINT
     );
 
