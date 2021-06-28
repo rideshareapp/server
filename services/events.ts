@@ -1,7 +1,7 @@
 // Services: Events
 
 import * as db from "../db/utils";
-import * as eventModel from "../models/events";
+// import * as eventModel from "../models/events";
 
 /**
  * Get organization email from token cookie and call createEvent database query
