@@ -2,10 +2,9 @@
 
 import express from 'express';
 const router = express.Router();
-import * as userController from "../controllers/users";
 import * as driverController from "../controllers/drivers";
+import { authenticateToken } from "../auth";
 
-router.post('/new', driverController.newDriver);
-router.post('/acceptTrip', driverController.acceptTrip);
+router.post('/new', authenticateToken, driverController.newDriver);
 
 export { router };
