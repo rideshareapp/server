@@ -3,6 +3,7 @@
 import * as jwt from "jsonwebtoken";
 import * as db from "../db/utils";
 import bcrypt from "bcrypt";
+import { Request, Response, NextFunction } from "express";
 
 /**
  * Hash a plaintext password using bcrypt
@@ -45,7 +46,7 @@ export async function authenticateAcc(email: string, password: string, type: "us
  * @returns JWT token
  */
 export async function tokenizeAcc(email: string): Promise<string> {
-    const token = jwt.sign(email, process.env.JWT_SECRET as string);
+    const token = jwt.sign({ "email": email }, process.env.JWT_SECRET as string);
     return token;
 }
 
@@ -76,5 +77,22 @@ export async function tokenGetPayload(token: string): Promise<unknown | jwt.Json
         return decoded;
     } catch (err) {
         return err;
+    }
+}
+
+export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
+    const header = req.headers['authorization'];
+    if (header === undefined || header === null) {
+        return res.sendStatus(401);
+    }
+    const token = header.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        req.user = decoded;
+        next();
+    } catch (err) {
+        console.error(err);
+        return res.sendStatus(403);
     }
 }
