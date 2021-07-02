@@ -81,7 +81,7 @@ export async function tokenGetPayload(token: string): Promise<unknown | jwt.Json
 }
 
 export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-    const header = req.headers['authorization'];
+    const header = req.headers.authorization;
     if (header === undefined || header === null) {
         return res.sendStatus(401);
     }
