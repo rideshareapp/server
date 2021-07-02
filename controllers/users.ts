@@ -25,8 +25,6 @@ export async function userRegister(req: Request, res: Response): Promise<Respons
 
 export async function login(req: Request, res: Response): Promise<Response> {
     try {
-        // TODO: Store session tokens
-
         // Authenticate user
         if (!await db.checkEntityExists(req.body.email, "users")) {
             return res.status(409).json(new Error("user not found"));
@@ -53,13 +51,13 @@ export async function joinOrg(req: Request, res: Response): Promise<Response> {
         if (!await db.checkOrgExists(req.body.code, "org_code")) {
             return res.status(409).json(new Error("org does not exist"));
         }
-        if (!await db.checkEntityExists(req.body.email, "users")) {
+        if (!await db.checkEntityExists(req.user.email, "users")) {
             return res.status(409).json(new Error("user not found"));
         }
-        if (await db.checkUserInOrg(req.body.code, req.body.email)) {
+        if (await db.checkUserInOrg(req.body.code, req.user.email)) {
             return res.status(409).json(new Error("user already in org"));
         }
-        if (!await db.joinOrg(req.body.code, req.body.email)) {
+        if (!await db.joinOrg(req.body.code, req.user.email)) {
             return res.status(500).json(new Error("failed to join org"));
         }
         return res.status(201).json(new Success("joined org"));
@@ -69,12 +67,21 @@ export async function joinOrg(req: Request, res: Response): Promise<Response> {
     }
 }
 
-// export async function leaveOrg(req: Request, res: Response): Promise<Response> {
-
-// }
+export async function leaveOrg(req: Request, res: Response): Promise<Response> {
+    try {
+        await db.leaveOrg(req.body.code, req.user.email);
+        return res.status(200).json(new Success("left org"));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}
 
 export async function updateUserProfile(req: Request, res: Response): Promise<Response> {
     try {
+        if (req.user.email !== req.body.email) {
+            return res.status(403);
+        }
         if (!await db.updateUserProfile(req.body)) {
             return res.status(500).json(new Error("internal server error"));
         }
@@ -87,7 +94,7 @@ export async function updateUserProfile(req: Request, res: Response): Promise<Re
 
 export async function updateUserPassword(req: Request, res: Response): Promise<Response> {
     try {
-        if (!await services.userService.updateUserPassword(req.body.email, req.body.oldPassword, req.body.newPassword)) {
+        if (!await services.userService.updateUserPassword(req.user.email, req.body.oldPassword, req.body.newPassword)) {
             return res.status(500).json(new Error("internal server error"));
         }
         return res.status(200).json(new Success("user updated"));
@@ -99,7 +106,7 @@ export async function updateUserPassword(req: Request, res: Response): Promise<R
 
 export async function updateUserEmail(req: Request, res: Response): Promise<Response> {
     try {
-        if (!await services.userService.updateUserEmail(req.body.oldEmail, req.body.newEmail)) {
+        if (!await services.userService.updateUserEmail(req.user.email, req.body.newEmail)) {
             return res.status(500).json(new Error("internal server error"));
         }
         return res.status(200).json(new Success("user updated"));
