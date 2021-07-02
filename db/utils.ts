@@ -3,6 +3,7 @@ import * as userModel from "../models/users";
 import * as orgModel from "../models/organization";
 import * as eventModel from "../models/events";
 
+// Functions
 
 /**
  * Create a new organization and add to database
@@ -190,7 +191,6 @@ export async function createEvent(code: string | unknown, name: string, date: Da
  */
 export async function updateEvent(id: number, name: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        // TODO: Make sure event belongs to user before updating
         await db.query("UPDATE events SET event_name = $1, event_date = $2, include_time = $3 WHERE id = $4", [name, date, include_time, id]);
         return true;
     } catch (err) {
@@ -200,14 +200,32 @@ export async function updateEvent(id: number, name: string, date: Date, include_
 }
 
 /**
+ * Check if event belongs to org
+ * @param org_email Org email requesting update/delete
+ * @param id Event ID 
+ * @returns boolean
+ */
+export async function checkEventBelongsToOrg(org_email: string, id: number): Promise<boolean> {
+    try {
+        if ((await db.query("SELECT * FROM events, organizations WHERE events.org_code = organizations.org_code AND organizations.email = $1 AND events.id = $2", [org_email, id])).rowCount === 0) {
+            return false;
+        }
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
  * Delete an event by id
+ * @param user event owner
  * @param id id from event table
  * @returns boolean
  */
-export async function deleteEvent(id: number): Promise<boolean> {
+export async function deleteEvent(user: string, id: number): Promise<boolean> {
     try {
-        // TODO: Make sure event belongs to user before deleting
-        await db.query("DELETE FROM events WHERE id = $1", [id]);
+        await db.query("DELETE FROM events, organizations WHERE events.org_code = organizations.org_code AND events.id = $1 AND organizations.email = $2", [id, user]);
         return true;
     } catch (err) {
         console.error(err);
@@ -217,13 +235,19 @@ export async function deleteEvent(id: number): Promise<boolean> {
 
 /**
  * Get all events for an organization
- * @param code Organization code
+ * @param org Organization code or array of codes
+ * @param type spectify single code or array of codes
  * @returns Array of organization events
  */
-export async function getEvents(code: string): Promise<Array<eventModel.EventNoCode>> {
+export async function getEvents(org: string | Array<string>, type: "list" | "code"): Promise<Array<eventModel.EventNoCode>> {
     try {
-        const res = await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = $1", [code]);
-        return (res.rows);
+        if (type === "code") {
+            // one code
+            return (await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = $1", [org])).rows;
+        } else {
+            // array of codes
+            return (await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = ANY ($1)", [org])).rows;
+        }
     } catch (err) {
         console.error(err);
         return err;
@@ -247,6 +271,42 @@ export async function joinOrg(code: string, email: string): Promise<boolean> {
 }
 
 /**
+ * Remove an organization from user's list of organizations
+ * @param code Org code to be removed
+ * @param email user email
+ * @returns boolean
+ */
+export async function leaveOrg(code: string, email: string): Promise<boolean> {
+    try {
+        const org_list: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
+        const index = org_list.indexOf(code);
+        if (index > -1) {
+            org_list.splice(index, 1);
+        }
+        await db.query("UPDATE users SET in_orgs = $1 WHERE email = $2", [org_list, email]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Get list of organizationss by user
+ * @param user List all organizations a user belongs in
+ * @returns Array
+ */
+export async function getOrgList(user: string): Promise<Array<string>> {
+    try {
+        const orgs: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [user])).rows[0].in_orgs;
+        return orgs;
+    } catch (err) {
+        console.error(err);
+        return err;
+    }
+}
+
+/**
  * Check if user is already in an organization
  * @param code Organization code to check
  * @param email User email
@@ -263,20 +323,62 @@ export async function checkUserInOrg(code: string, email: string): Promise<boole
     }
 }
 
+/**
+ * Convert org email to org code
+ * @param email email
+ * @returns organization code
+ */
+export async function getOrgCode(email: string): Promise<unknown> {
+    try {
+        return (await db.query("SELECT org_code FROM organizations WHERE email = $1", [email])).rows[0].org_code;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+/**
+ * 
+ * @param email Email of new driver (references users database)
+ * @param code Org code of org the user is driving for
+ * @returns boolean
+ */
 export async function newDriver(email: string, code: string): Promise<boolean> {
     try {
         await db.query("INSERT INTO drivers VALUES($1, $2)", [email, code]);
         return true;
     } catch (err) {
-        console.error(err.message);
+        console.error(err);
         // return false;
         throw Error("new error!");
     }
 }
 
-export async function getTripRequests(event_id: number): Promise<unknown> {
+/**
+ * Check if driver is authorized to accept events based on org status
+ * @param email driver email
+ * @param event_id event
+ * @returns boolean
+ */
+export async function driverInOrg(email: string, event_id: number): Promise<boolean> {
     try {
-        const res = await db.query("SELECT id, email, geolocation, passengers FROM trip_requests WHERE event_id = $1", [event_id]);
+        if ((await db.query("SELECT d.email FROM drivers AS d, events AS e WHERE d.org_code = e.org_code AND e.id = $1 AND d.email = $2", [event_id, email])).rowCount === 0) {
+            return false;
+        }
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Get trip requests as a driver (view by event)
+ * @param event_id Event ID
+ * @returns List of trip requests
+ */
+export async function getTripRequestsDriver(event_id: number): Promise<unknown> {
+    try {
+        const res = await db.query("SELECT id, passenger, geolocation, passengers_num FROM trip_requests WHERE event_id = $1", [event_id]);
         return (res.rows);
     } catch (err) {
         console.error(err);
@@ -284,9 +386,38 @@ export async function getTripRequests(event_id: number): Promise<unknown> {
     }
 }
 
-export async function newTripRequest(event_id: number, email: string, geolocation: string, passengers: number): Promise<boolean> {
+/**
+ * Get trip requests as a user
+ * @param passenger User email
+ * @returns List of trip requests
+ */
+export async function getTripRequestsUser(passenger: string): Promise<unknown> {
     try {
-        await db.query("INSERT INTO trip_requests(event_id, email, geolocation, passengers) VALUES($1, $2, $3, $4)", [event_id, email, geolocation, passengers]);
+        return (await db.query(`
+        SELECT org_name, organizations.org_code, event_name, event_date, 
+        include_time, passenger, geolocation, passengers_num 
+        FROM events, trip_requests, organizations 
+        WHERE events.id = trip_requests.event_id 
+        AND organizations.org_code = events.org_code 
+        AND passenger = $1
+        `, [passenger])).rows;
+    } catch (err) {
+        console.error(err);
+        return err;
+    }
+}
+
+/**
+ * Creates a new trip request with user information
+ * @param event_id event user is requesting a ride for
+ * @param passenger user email
+ * @param geolocation location coordiantes
+ * @param passengers_num number of passengers
+ * @returns boolean
+ */
+export async function newTripRequest(event_id: number, passenger: string, geolocation: coordinates, passengers_num: number): Promise<boolean> {
+    try {
+        await db.query("INSERT INTO trip_requests(event_id, passenger, geolocation, passengers_num) VALUES($1, $2, $3, $4)", [event_id, passenger, `(${geolocation.x},${geolocation.y})`, passengers_num]);
         return true;
     } catch (err) {
         console.error(err);
@@ -294,22 +425,85 @@ export async function newTripRequest(event_id: number, email: string, geolocatio
     }
 }
 
-export async function acceptTripRequest(event_id: number, trip_request_id: number, driver: string): Promise<unknown> {
+/**
+ * Move trip requests to confirmed trips with confirmed driver and delete request
+ * @param trip_request_id Trip request ID
+ * @param driver Driver email that is accepting trip request
+ * @returns boolean
+ */
+export async function acceptTripRequest(trip_request_id: number, driver: string): Promise<unknown> {
     try {
-        const tripRequest = (await db.query("SELECT * FROM trip_requests WHERE id = $1", [trip_request_id])).rows[0];
-        console.log(tripRequest.geolocation);
-        const checkTripExists = (await db.query("SELECT id FROM trips WHERE driver = $1 AND event_id = $2", [driver, event_id]));
-        if (checkTripExists.rowCount !== 0) {
-            // UPDATE
-            await db.query("UPDATE trips SET people = people || $1, total_passengers = total_passengers + $2 WHERE event_id = $3 AND driver = $4", [`[{"email": "${tripRequest.email}", "geolocation": ${JSON.stringify(tripRequest.geolocation)},"passengers": "${tripRequest.passengers}"}]`, tripRequest.passengers, event_id, driver]);
-        } else {
-            // CREATE
-            await db.query("INSERT INTO trips(driver, event_id, people, total_passengers) VALUES($1, $2, $3, $4)", [driver, event_id, `[{"email": "${tripRequest.email}", "geolocation": ${JSON.stringify(tripRequest.geolocation)},"passengers": "${tripRequest.passengers}"}]`, tripRequest.passengers]);
+        // Check if driver is allowed to accept
+        const canAccept = (await db.query(`SELECT * FROM trip_requests, drivers, events WHERE drivers.org_code = events.org_code AND trip_requests.event_id = events.id AND drivers.email = $1`, [driver])).rowCount !== 0;
+        if (!canAccept) {
+            return false;
         }
+        const tripRequest = (await db.query("SELECT * FROM trip_requests WHERE id = $1", [trip_request_id])).rows[0];
+        await db.query("INSERT INTO trips(driver, event_id, passenger, geolocation, passengers_num) VALUES($1, $2, $3, $4, $5)", [driver, tripRequest.event_id, tripRequest.passenger, `(${tripRequest.geolocation.x},${tripRequest.geolocation.y})`, tripRequest.passengers_num]);
         await db.query("DELETE FROM trip_requests WHERE id = $1", [trip_request_id]);
         return true;
     } catch (err) {
         console.error(err);
         return false;
+    }
+}
+
+/**
+ * Delete a confirmed trip by driver and event ID
+ * @param driver Driver email
+ * @param event_id Event
+ * @returns boolean
+ */
+export async function deleteTrip(driver: string, event_id: number): Promise<boolean> {
+    try {
+        await db.query("DELETE FROM trips WHERE driver = $1 and event_id = $2", [driver, event_id]);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+/**
+ * Get confirmed trips as a driver (View individual passengers and their information)
+ * @param driver Driver email
+ * @returns List of confirmed trips by event ID
+ */
+export async function getConfirmedTripsDriver(driver: string): Promise<unknown> {
+    try {
+        return (await db.query(`
+        SELECT o.org_name, e.event_name, e.event_date, e.include_time, 
+        u.first_name, u.last_name, t.passenger, t.geolocation, t.passengers_num
+        FROM events AS e, trips AS t, organizations AS o, users AS u
+        WHERE o.org_code = e.org_code
+        AND u.email = passenger
+        AND e.id = t.event_id
+        AND t.driver = $1
+        `, [driver])).rows;
+    } catch (err) {
+        console.error(err);
+        return err;
+    }
+}
+
+/**
+ * Get confirmed trips as a user (Can see driver information)
+ * @param user User email
+ * @returns List of confiremd trips by event ID
+ */
+export async function getConfirmedTripsUser(user: string): Promise<unknown> {
+    try {
+        return (await db.query(`
+        SELECT o.org_name, e.event_name, e.event_date, e.include_time, u.first_name AS driver_first, 
+        u.last_name AS driver_last, u.email AS driver_email, t.geolocation, t.passengers_num
+        FROM events AS e, trips AS t, organizations AS o, users AS u
+        WHERE u.email = t.driver
+        AND o.org_code = e.org_code
+        AND e.id = t.event_id
+        AND t.passenger = $1
+        `, [user])).rows;
+    } catch (err) {
+        console.error(err);
+        return err;
     }
 }
