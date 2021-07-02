@@ -14,6 +14,9 @@ export async function orgRegister(req: Request, res: Response): Promise<Response
         if (await db.checkEntityExists(org.email, "organizations")) {
             return res.status(409).json(new Error("org already exists"));
         }
+
+        org.password = await auth.hashPassword(org.password);
+
         if (!await services.orgService.createNewOrg(org)) {
             return res.status(500).json(new Error("failed to create org"));
         }
@@ -27,8 +30,6 @@ export async function orgRegister(req: Request, res: Response): Promise<Response
 
 export async function login(req: Request, res: Response): Promise<Response> {
     try {
-        // TODO: Store session tokens
-
         // Authenticate organization login
         if (!await db.checkEntityExists(req.body.email, "organizations")) {
             return res.status(409).json(new Error("org not found"));
