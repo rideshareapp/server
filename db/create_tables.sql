@@ -24,19 +24,20 @@ BEGIN
     );
 
     CREATE TABLE IF NOT EXISTS trips (
-        id SERIAL PRIMARY KEY,
         driver VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
         event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        people JSONB,
-        total_passengers SMALLINT
+        passenger VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
+        geolocation POINT NOT NULL,
+        passengers_num SMALLINT DEFAULT 1 NOT NULL,
+        PRIMARY KEY (event_id, passenger)
     );
 
     CREATE TABLE IF NOT EXISTS trip_requests (
         id SERIAL PRIMARY KEY,
         event_id SERIAL REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE,
-        email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
-        geolocation POINT,
-        passengers SMALLINT DEFAULT 1
+        passenger VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE,
+        geolocation POINT NOT NULL,
+        passengers_num SMALLINT DEFAULT 1 NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS events (
