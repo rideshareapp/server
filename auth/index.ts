@@ -46,7 +46,7 @@ export async function authenticateAcc(email: string, password: string, type: "us
  * @returns JWT token
  */
 export async function tokenizeAcc(email: string): Promise<string> {
-    const token = jwt.sign({ "email": email }, process.env.JWT_SECRET as string);
+    const token = jwt.sign({ "email": email }, process.env.ACCESS_TOKEN as string, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
     return token;
 }
 
@@ -58,7 +58,7 @@ export async function tokenizeAcc(email: string): Promise<string> {
  */
 export async function verifyToken(email: string, token: string): Promise<unknown> {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string);
         console.log(decoded);
         return decoded;
     } catch (err) {
@@ -88,7 +88,7 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     const token = header.split(' ')[1];
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string);
         req.user = decoded;
         next();
     } catch (err) {
