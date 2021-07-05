@@ -34,7 +34,8 @@ export async function login(req: Request, res: Response): Promise<Response> {
         }
         // Return token
         const token = await auth.tokenizeAcc(req.body.email);
-        return res.status(200).json(new Success({ "token": token }));
+        // return res.status(200).json(new Success({ "token": token }));
+        return res.cookie('ACCESS_TOKEN', token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * 86400) }).json(new Success({ "token": token })).status(200);
     } catch (err) {
         console.error(err);
         return res.status(500).json(new Error("internal server error"));
