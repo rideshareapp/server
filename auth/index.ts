@@ -41,12 +41,22 @@ export async function authenticateAcc(email: string, password: string, type: "us
 }
 
 /**
- * Create JWT token using email
+ * Create JWT access token using email
  * @param email User or org email
  * @returns JWT token
  */
-export async function tokenizeAcc(email: string): Promise<string> {
-    const token = jwt.sign({ "email": email }, process.env.ACCESS_TOKEN as string, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
+ export async function createAccessToken(email: string): Promise<string> {
+    const token = jwt.sign({ "email": email }, process.env.ACCESS_TOKEN as string, { expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}s` });
+    return token;
+}
+
+/**
+ * Create a JWT refresh token using email
+ * @param email User or org email
+ * @returns JWT token
+ */
+export async function createRefreshToken(email: string): Promise<string> {
+    const token = jwt.sign({ "email": email }, process.env.REFRESH_TOKEN as string, { expiresIn: `${process.env.REFRESH_TOKEN_EXPIRY}s` });
     return token;
 }
 
@@ -81,11 +91,16 @@ export async function tokenGetPayload(token: string): Promise<unknown | jwt.Json
 }
 
 export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
-    const header = req.headers.authorization;
-    if (header === undefined || header === null) {
+    // const header = req.headers.authorization;
+    // if (header === undefined || header === null) {
+    //     return res.sendStatus(401);
+    // }
+    // const token = header.split(' ')[1];
+
+    const token = req.cookies.ACCESS_TOKEN;
+    if (token === undefined || token === null) {
         return res.sendStatus(401);
     }
-    const token = header.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string);
