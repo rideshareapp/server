@@ -19,3 +19,7 @@ interface eventRequest {
     date: Date;
     include_time: boolean;
 }
+
+interface JWTUserEmail {
+    email: string;
+}
