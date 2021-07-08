@@ -4,6 +4,9 @@ import * as jwt from "jsonwebtoken";
 import * as db from "../db/utils";
 import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
+import { Success, Error } from "../models/return_status";
+import * as redis from "../db/redis";
+
 
 /**
  * Hash a plaintext password using bcrypt
@@ -45,7 +48,7 @@ export async function authenticateAcc(email: string, password: string, type: "us
  * @param email User or org email
  * @returns JWT token
  */
- export async function createAccessToken(email: string): Promise<string> {
+export async function createAccessToken(email: string): Promise<string> {
     const token = jwt.sign({ "email": email }, process.env.ACCESS_TOKEN as string, { expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}s` });
     return token;
 }
@@ -69,7 +72,6 @@ export async function createRefreshToken(email: string): Promise<string> {
 export async function verifyToken(email: string, token: string): Promise<unknown> {
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN as string);
-        console.log(decoded);
         return decoded;
     } catch (err) {
         return err;
@@ -89,7 +91,13 @@ export async function tokenGetPayload(token: string): Promise<unknown | jwt.Json
         return err;
     }
 }
-
+/**
+ * Authenticate a user using the access token cookie
+ * @param req Express request
+ * @param res Express response
+ * @param next Express NextFunction
+ * @returns Express response (401/403) or goes to next funciton
+ */
 export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<Response | undefined> {
     // const header = req.headers.authorization;
     // if (header === undefined || header === null) {
@@ -109,5 +117,38 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     } catch (err) {
         console.error(err);
         return res.sendStatus(403);
+    }
+}
+
+/**
+ * Refresh a user access token using a refresh token if the refesh token is valid
+ * @param req Express request
+ * @param res Express response
+ * @returns New access token
+ */
+export async function refreshAccessToken(req: Request, res: Response): Promise<Response> {
+    const token = req.cookies.REFRESH_TOKEN;
+    console.log(token);
+
+    // Check if token exists
+    if (!token) {
+        return res.sendStatus(401);
+    }
+
+    // Check if refresh token in Redis
+    if (!(await redis.keyExists(token))) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN as string);
+        const email = (decoded as JWTUserEmail).email;
+
+        const access_token = jwt.sign({ "email": email }, process.env.ACCESS_TOKEN as string, { expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}s` });
+        res.cookie('ACCESS_TOKEN', access_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.ACCESS_TOKEN_EXPIRY || "")), sameSite: "strict" });
+        return res.status(200).json(new Success({ "access_token": access_token }));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
     }
 }
