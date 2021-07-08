@@ -25,6 +25,7 @@
     "@types/express": "^4.17.12",
     "@types/node": "^15.12.4",
     "@types/pg": "^8.6.0",
+    "@types/redis": "^2.8.30",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
     "eslint": "^7.29.0",
@@ -39,10 +40,12 @@
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "handy-redis": "^2.2.2",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
-    "pg": "^8.6.0"
+    "pg": "^8.6.0",
+    "redis": "^3.1.2"
   }
 }
