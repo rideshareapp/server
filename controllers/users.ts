@@ -40,6 +40,7 @@ export async function login(req: Request, res: Response): Promise<Response> {
 
         // Insert refresh token into Redis database
         redis.insertKey(refresh_token, req.body.email);
+        redis.expire(refresh_token, parseInt(process.env.REFRESH_TOKEN_EXPIRY || ""));
 
         // Return token
         res.cookie('ACCESS_TOKEN', access_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.ACCESS_TOKEN_EXPIRY || "")), sameSite: "strict" });
