@@ -49,7 +49,7 @@ export async function login(req: Request, res: Response): Promise<Response> {
 
         // Return token
         res.cookie('ACCESS_TOKEN', access_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.ACCESS_TOKEN_EXPIRY || "")), sameSite: "strict" });
-        res.cookie('REFRESH_TOKEN', refresh_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.ACCESS_TOKEN_EXPIRY || "")), path: "/token/refresh", sameSite: "strict" });
+        res.cookie('REFRESH_TOKEN', refresh_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.REFRESH_TOKEN_EXPIRY || "")), path: "/token/refresh", sameSite: "strict" });
         return res.status(200).json(new Success({ "access_token": access_token, "refresh_token": refresh_token }));
     } catch (err) {
         console.error(err);
