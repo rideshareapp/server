@@ -21,7 +21,7 @@ export async function getTripRequestsDriver(req: Request, res: Response): Promis
     try {
         // Check if driver is allowed to view requests for an event
         if (!await db.driverInOrg(req.user.email, req.body.event_id)) {
-            return res.status(403);
+            return res.sendStatus(403);
         }
         const tripRequests = await db.getTripRequestsDriver(req.body.event_id);
         return res.status(200).json(new Success(tripRequests));

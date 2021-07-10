@@ -8,7 +8,7 @@ import * as db from "../db/utils";
 export async function createEvent(req: Request, res: Response): Promise<Response> {
     try {
         if (await db.getOrgCode(req.user.email) !== req.body.code) {
-            return res.status(403);
+            return res.sendStatus(403);
         }
 
         const event: eventRequest = req.body;
@@ -25,7 +25,7 @@ export async function createEvent(req: Request, res: Response): Promise<Response
 export async function updateEvent(req: Request, res: Response): Promise<Response> {
     try {
         if (!await db.checkEventBelongsToOrg(req.user.email, req.body.id)) {
-            return res.status(403);
+            return res.sendStatus(403);
         }
 
         if (!await db.updateEvent(req.body.id, req.body.name, req.body.date, req.body.include_time)) {
@@ -41,7 +41,7 @@ export async function updateEvent(req: Request, res: Response): Promise<Response
 export async function deleteEvent(req: Request, res: Response): Promise<Response> {
     try {
         if (!await db.checkEventBelongsToOrg(req.user.email, req.body.id)) {
-            return res.status(403);
+            return res.sendStatus(403);
         }
 
         if (!await db.deleteEvent(req.user.email, req.body.id)) {
