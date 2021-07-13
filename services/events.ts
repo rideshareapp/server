@@ -55,7 +55,7 @@ export async function createEvent(code: string, name: string, date: Date, includ
 
 /**
  * Get list of events associated with an organization
- * @param code Organization code
+ * @param user User email
  * @returns List of events
  */
 export async function getEvents(user: string): Promise<Array<unknown> | boolean> {
