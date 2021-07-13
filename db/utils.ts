@@ -262,7 +262,8 @@ export async function getEvents(org: string | Array<string>, type: "list" | "cod
  */
 export async function joinOrg(code: string, email: string): Promise<boolean> {
     try {
-        await db.query(`UPDATE users SET in_orgs = in_orgs || ARRAY[$1] WHERE email = $2`, [code, email]);
+        // await db.query(`UPDATE users SET in_orgs = in_orgs || ARRAY[$1] WHERE email = $2`, [code, email]);
+        await db.query(`INSERT INTO user_orgs VALUES($1, $2)`, [email, code]);
         return true;
     } catch (err) {
         console.error(err);
@@ -278,12 +279,13 @@ export async function joinOrg(code: string, email: string): Promise<boolean> {
  */
 export async function leaveOrg(code: string, email: string): Promise<boolean> {
     try {
-        const org_list: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
-        const index = org_list.indexOf(code);
-        if (index > -1) {
-            org_list.splice(index, 1);
-        }
-        await db.query("UPDATE users SET in_orgs = $1 WHERE email = $2", [org_list, email]);
+        // const org_list: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
+        // const index = org_list.indexOf(code);
+        // if (index > -1) {
+        //     org_list.splice(index, 1);
+        // }
+        // await db.query("UPDATE users SET in_orgs = $1 WHERE email = $2", [org_list, email]);
+        await db.query("DELETE FROM user_orgs WHERE email = $1 AND org_code = $2", [email, code]);
         return true;
     } catch (err) {
         console.error(err);
@@ -298,7 +300,12 @@ export async function leaveOrg(code: string, email: string): Promise<boolean> {
  */
 export async function getOrgList(user: string): Promise<Array<string>> {
     try {
-        const orgs: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [user])).rows[0].in_orgs;
+        // const orgs: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [user])).rows[0].in_orgs;
+        const res = (await db.query("SELECT org_code FROM user_orgs WHERE email = $1", [user]));
+        const orgs = [];
+        for (let i = 0; i < res.rowCount; i++) {
+            orgs.push(res.rows[i].org_code);
+        }
         return orgs;
     } catch (err) {
         console.error(err);
@@ -314,9 +321,11 @@ export async function getOrgList(user: string): Promise<Array<string>> {
  */
 export async function checkUserInOrg(code: string, email: string): Promise<boolean> {
     try {
-        const res = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
-        if (res === null) return false; // If new user not in any orgs
-        return (await res.includes(code) ? true : false);
+        // const res = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
+        // if (res === null) return false; // If new user not in any orgs
+        // return (res.includes(code) ? true : false);
+        const rows = (await db.query("SELECT * from user_orgs WHERE email = $1 AND org_code = $2", [email, code])).rowCount;
+        return (rows > 0 ? true : false);
     } catch (err) {
         console.error(err);
         return true;
