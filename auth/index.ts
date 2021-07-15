@@ -106,7 +106,7 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     // const token = header.split(' ')[1];
 
     const token = req.cookies.ACCESS_TOKEN;
-    if (token === undefined || token === null) {
+    if (token === undefined || token === null || token === "") {
         return res.sendStatus(401);
     }
 
