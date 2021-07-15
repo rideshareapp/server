@@ -55,7 +55,10 @@ export async function login(req: Request, res: Response): Promise<Response> {
 export async function logout(req: Request, res: Response): Promise<Response> {
     // User logout logic
     try {
-        redis.deleteKey(req.cookies.REFRESH_TOKEN);
+        if (req.cookies.REFRESH_TOKEN !== undefined) {
+            redis.deleteKey(req.cookies.REFRESH_TOKEN);
+        }
+        res.clearCookie('ACCESS_TOKEN');
         return res.sendStatus(401);
     } catch (err) {
         console.error(err);
