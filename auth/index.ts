@@ -128,7 +128,15 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
  */
 export async function refreshAccessToken(req: Request, res: Response): Promise<Response> {
     const token = req.cookies.REFRESH_TOKEN;
-    console.log(token);
+    const token_valid = req.cookies.REFRESH_TOKEN_VALID;
+
+    if (token_valid !== "true") {
+        if (req.cookies.REFRESH_TOKEN !== undefined) {
+            redis.deleteKey(req.cookies.REFRESH_TOKEN);
+        }
+        res.clearCookie('REFRESH_TOKEN', { httpOnly: true, path: "/auth/refresh", sameSite: "strict" });
+        return res.sendStatus(401);
+    }
 
     // Check if token exists
     if (!token) {
