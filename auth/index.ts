@@ -160,3 +160,18 @@ export async function refreshAccessToken(req: Request, res: Response): Promise<R
         return res.status(500).json(new Error("internal server error"));
     }
 }
+
+export async function logout(req: Request, res: Response): Promise<Response> {
+    try {
+        if (req.cookies.REFRESH_TOKEN !== undefined) {
+            redis.deleteKey(req.cookies.REFRESH_TOKEN);
+        }
+        res.clearCookie('ACCESS_TOKEN', { httpOnly: true, sameSite: "strict" });
+        res.clearCookie('REFRESH_TOKEN', { httpOnly: true, path: "/auth/refresh", sameSite: "strict" });
+        res.clearCookie('REFRESH_TOKEN_VALID', { sameSite: "strict" });
+        return res.sendStatus(401);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}

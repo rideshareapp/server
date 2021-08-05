@@ -53,21 +53,6 @@ export async function login(req: Request, res: Response): Promise<Response> {
     }
 }
 
-export async function logout(req: Request, res: Response): Promise<Response> {
-    // User logout logic
-    try {
-        if (req.cookies.REFRESH_TOKEN !== undefined) {
-            redis.deleteKey(req.cookies.REFRESH_TOKEN);
-        }
-        res.clearCookie('ACCESS_TOKEN', { httpOnly: true, sameSite: "strict" });
-        res.clearCookie('REFRESH_TOKEN_VALID', { sameSite: "strict" });
-        return res.sendStatus(401);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json(new Error("internal server error"));
-    }
-}
-
 export async function joinOrg(req: Request, res: Response): Promise<Response> {
     try {
         if (!await db.checkOrgExists(req.body.code, "org_code")) {

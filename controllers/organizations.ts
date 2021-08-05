@@ -48,20 +48,9 @@ export async function login(req: Request, res: Response): Promise<Response> {
 
         // Return token
         res.cookie('ACCESS_TOKEN', access_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.ACCESS_TOKEN_EXPIRY || "")), sameSite: "strict" });
-        res.cookie('REFRESH_TOKEN', refresh_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.REFRESH_TOKEN_EXPIRY || "")), path: "/token/refresh", sameSite: "strict" });
+        res.cookie('REFRESH_TOKEN', refresh_token, { httpOnly: true, expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.REFRESH_TOKEN_EXPIRY || "")), path: "/auth/refresh", sameSite: "strict" });
         res.cookie('REFRESH_TOKEN_VALID', true, { expires: new Date(new Date().getTime() + 1000 * parseInt(process.env.REFRESH_TOKEN_EXPIRY || "")), sameSite: "strict" });
         return res.status(200).json(new Success({ "access_token": access_token, "refresh_token": refresh_token }));
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json(new Error("internal server error"));
-    }
-}
-
-export async function logout(req: Request, res: Response): Promise<Response> {
-    // User logout logic
-    try {
-        redis.deleteKey(req.cookies.REFRESH_TOKEN);
-        return res.sendStatus(401);
     } catch (err) {
         console.error(err);
         return res.status(500).json(new Error("internal server error"));
