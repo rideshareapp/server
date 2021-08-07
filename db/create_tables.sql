@@ -1,5 +1,6 @@
 BEGIN
     CREATE EXTENSION IF NOT EXISTS CITEXT;
+    SET TIME ZONE 'UTC';
 
     CREATE TABLE IF NOT EXISTS users (
         email VARCHAR(255) NOT NULL PRIMARY KEY,
@@ -49,7 +50,7 @@ BEGIN
         id SERIAL PRIMARY KEY,
         org_code CITEXT NOT NULL REFERENCES organizations(org_code) ON DELETE CASCADE ON UPDATE CASCADE,
         event_name VARCHAR(255) NOT NULL,
-        event_date TIMESTAMP NOT NULL,
+        event_date TIMESTAMPTZ NOT NULL,
         include_time BOOLEAN NOT NULL DEFAULT false
     );
 
