@@ -42,17 +42,6 @@ Response:
 }
 ```
 
-## /logout
-
-Request:
-```json
-
-```
-Response:
-```json
-
-```
-
 ## /joinOrg
 
 Request:
@@ -82,6 +71,20 @@ Response:
 {
   "status": "success",
   "details": "left org"
+}
+```
+
+## /profile
+
+Request: Uses user email from authentication cookie
+
+Response:
+```json
+{
+	"first":"John", // Editable
+	"last": "Doe", // Editable
+	"phone": "1234567800", // Editable
+	"email": "JohnDoe@email.com"
 }
 ```
 

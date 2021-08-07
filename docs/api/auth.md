@@ -12,3 +12,14 @@ Response:
   }
 }
 ```
+
+## /validToken
+Request: N/A (Uses authentication token cookie)
+
+Response: Status code 200
+
+
+## /refresh/logout
+Request: N/A (Uses existing cookies)
+
+Response: Status code 200
