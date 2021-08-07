@@ -124,7 +124,7 @@ export async function updateUserPassword(email: string, password: string): Promi
 export async function findUser(email: string): Promise<userModel.User> {
     const res = await db.query("SELECT * FROM users WHERE email = $1", [email]);
     const userArray = await res.rows[0];
-    const user = new userModel.User(userArray.first_name, userArray.last_name, userArray.phone, userArray.email, userArray.pw_hashed);
+    const user = new userModel.User(userArray.first_name, userArray.last_name, userArray.phone, userArray.email, "");
     return user;
     // return (await db.query("SELECT * FROM users WHERE email = $1", [user])).rows[0];
 }
@@ -243,10 +243,22 @@ export async function getEvents(org: string | Array<string>, type: "list" | "cod
     try {
         if (type === "code") {
             // one code
-            return (await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = $1", [org])).rows;
+            return (await db.query(`
+            SELECT e.id, e.org_code, e.event_name, e.event_date, e.include_time, o.org_name, o.email
+            FROM events AS e
+            INNER JOIN organizations AS o
+            ON e.org_code = o.org_code
+            WHERE e.org_code = $1
+            `, [org])).rows;
         } else {
             // array of codes
-            return (await db.query("SELECT id, event_name, event_date, include_time FROM events WHERE org_code = ANY ($1)", [org])).rows;
+            return (await db.query(`
+            SELECT e.id, e.org_code, e.event_name, e.event_date, e.include_time, o.org_name, o.email
+            FROM events AS e
+            INNER JOIN organizations AS o
+            ON e.org_code = o.org_code
+            WHERE e.org_code = ANY ($1)
+            `, [org])).rows;
         }
     } catch (err) {
         console.error(err);
