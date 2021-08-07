@@ -122,3 +122,13 @@ export async function updateUserEmail(req: Request, res: Response): Promise<Resp
         return res.status(500).json(new Error("internal server error"));
     }
 }
+
+export async function getProfile(req: Request, res: Response): Promise<Response> {
+    try {
+        const user = await db.findUser(req.user.email);
+        return res.status(200).json(new Success({ "user_info": user }));
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json(new Error("internal server error"));
+    }
+}

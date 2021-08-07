@@ -12,6 +12,8 @@ router.put('/update/profile', authenticateToken, userController.updateUserProfil
 router.put('/update/email', authenticateToken, userController.updateUserEmail);
 router.put('/update/password', authenticateToken, userController.updateUserPassword);
 
+router.get('/profile', authenticateToken, userController.getProfile);
+
 // Organization related routes
 router.put('/joinOrg', authenticateToken, userController.joinOrg);
 router.put('/leaveOrg', authenticateToken, userController.leaveOrg);
