@@ -167,13 +167,15 @@ export async function getPassword(email: string, type: "users" | "organizations"
  * Create a new event and add to database
  * @param code Organization code
  * @param name Event name
+ * @param description Event description (not required)
+ * @param location Event location (not required)
  * @param date Event date
  * @param include_time Tells the frontend whether or not to display time
  * @returns boolean
  */
-export async function createEvent(code: string | unknown, name: string, date: Date, include_time: boolean): Promise<boolean> {
+export async function createEvent(code: string | unknown, name: string, description: string, location: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        await db.query("INSERT INTO events(org_code, event_name, event_date, include_time) VALUES($1, $2, $3, $4)", [code, name, date, include_time]);
+        await db.query("INSERT INTO events(org_code, event_name, event_description, event_location, event_date, include_time) VALUES($1, $2, $3, $4, $5, $6)", [code, name, description, location, date, include_time]);
         return true;
     } catch (err) {
         console.error(err);
@@ -185,13 +187,15 @@ export async function createEvent(code: string | unknown, name: string, date: Da
  * Update an existing event
  * @param id Event id
  * @param name Updated name
+ * @param description Updated description
+ * @param location Update location
  * @param date Updated date
  * @param include_time Tells the frontend whether or not to display time
  * @returns boolean
  */
-export async function updateEvent(id: number, name: string, date: Date, include_time: boolean): Promise<boolean> {
+export async function updateEvent(id: number, name: string, description: string, location: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        await db.query("UPDATE events SET event_name = $1, event_date = $2, include_time = $3 WHERE id = $4", [name, date, include_time, id]);
+        await db.query("UPDATE events SET event_name = $1, event_description = $2, event_location = $3, event_date = $4, include_time = $5 WHERE id = $6", [name, description, location, date, include_time, id]);
         return true;
     } catch (err) {
         console.error(err);
@@ -244,7 +248,7 @@ export async function getEvents(org: string | Array<string>, type: "list" | "cod
         if (type === "code") {
             // one code
             return (await db.query(`
-            SELECT e.id, e.org_code, e.event_name, e.event_date, e.include_time, o.org_name, o.email
+            SELECT e.id, e.org_code, e.event_name, e.event_date, e.event_description, e.event_location, e.include_time, o.org_name, o.email
             FROM events AS e
             INNER JOIN organizations AS o
             ON e.org_code = o.org_code
@@ -253,7 +257,7 @@ export async function getEvents(org: string | Array<string>, type: "list" | "cod
         } else {
             // array of codes
             return (await db.query(`
-            SELECT e.id, e.org_code, e.event_name, e.event_date, e.include_time, o.org_name, o.email
+            SELECT e.id, e.org_code, e.event_name, e.event_date, e.event_description, e.event_location, e.include_time, o.org_name, o.email
             FROM events AS e
             INNER JOIN organizations AS o
             ON e.org_code = o.org_code
@@ -291,12 +295,6 @@ export async function joinOrg(code: string, email: string): Promise<boolean> {
  */
 export async function leaveOrg(code: string, email: string): Promise<boolean> {
     try {
-        // const org_list: Array<string> = (await db.query("SELECT in_orgs FROM users WHERE email = $1", [email])).rows[0].in_orgs;
-        // const index = org_list.indexOf(code);
-        // if (index > -1) {
-        //     org_list.splice(index, 1);
-        // }
-        // await db.query("UPDATE users SET in_orgs = $1 WHERE email = $2", [org_list, email]);
         await db.query("DELETE FROM user_orgs WHERE email = $1 AND org_code = $2", [email, code]);
         return true;
     } catch (err) {

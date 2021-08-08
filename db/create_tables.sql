@@ -50,6 +50,8 @@ BEGIN
         id SERIAL PRIMARY KEY,
         org_code CITEXT NOT NULL REFERENCES organizations(org_code) ON DELETE CASCADE ON UPDATE CASCADE,
         event_name VARCHAR(255) NOT NULL,
+        event_description VARCHAR(1000),
+        event_location VARCHAR(255),
         event_date TIMESTAMPTZ NOT NULL,
         include_time BOOLEAN NOT NULL DEFAULT false
     );
