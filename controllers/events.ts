@@ -12,7 +12,7 @@ export async function createEvent(req: Request, res: Response): Promise<Response
         }
 
         const event: eventRequest = req.body;
-        if (!await services.eventService.createEvent(event.code, event.name, event.date, event.include_time)) {
+        if (!await services.eventService.createEvent(event.code, event.name, event.description, event.location, event.date, event.include_time)) {
             return res.status(400).json(new Error("failed to create event"));
         }
         return res.status(201).json(new Success("event created"));
@@ -28,7 +28,8 @@ export async function updateEvent(req: Request, res: Response): Promise<Response
             return res.sendStatus(403);
         }
 
-        if (!await db.updateEvent(req.body.id, req.body.name, req.body.date, req.body.include_time)) {
+        const event: eventRequest = req.body;
+        if (!await db.updateEvent(req.body.id, event.name, event.description, event.location, event.date, event.include_time)) {
             return res.status(400).json(new Error("failed to update event"));
         }
         return res.status(200).json(new Success("event updated"));

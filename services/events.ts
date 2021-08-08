@@ -7,12 +7,15 @@ import * as db from "../db/utils";
  * Get organization email from token cookie and call createEvent database query
  * @param code Org code
  * @param name Event name
+ * @param description Event description (not required)
+ * @param location Event location (not required)
  * @param date Event date
+ * @param include_time Tells the frontend whether or not to display time
  * @returns boolean
  */
-export async function createEvent(code: string, name: string, date: Date, include_time: boolean): Promise<boolean> {
+export async function createEvent(code: string, name: string, description: string, location: string, date: Date, include_time: boolean): Promise<boolean> {
     try {
-        return (await db.createEvent(code, name, date, include_time) ? true : false);
+        return (await db.createEvent(code, name, description, location, date, include_time) ? true : false);
     } catch (err) {
         console.error(err);
         return false;
