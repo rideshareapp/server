@@ -28,6 +28,6 @@ app.get('*', (req: express.Request, res: express.Response) => {
 //   next();
 // });
 
-console.log("App is ready!");
+console.log(`App is listening on port ${process.env.PORT || 9000}.`);
 
 module.exports = app;
