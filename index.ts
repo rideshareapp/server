@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
+const origins = (process.env.ORIGIN as string).split(",");
+app.use(cors({ credentials: true, origin: origins }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
