@@ -39,7 +39,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "handy-redis": "^2.2.2",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^9.0.0",
